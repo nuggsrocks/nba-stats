@@ -1,43 +1,11 @@
 import re
-
+from sklearn import linear_model
+from scipy import stats
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
 import time
-
-teams = [
-    ['WAS', 'wizards', 'Washington', 'Wizards', ['#002b5c', '#e31837', '#002b5c']],
-    ['UTA', 'jazz', 'Utah', 'Jazz', ['#002b5c', '#f9a01b', '#002b5c']],
-    ['TOR', 'raptors', 'Toronto', 'Raptors', ['#000000', '#ce1141', '#000000']],
-    ['SAS', 'spurs', 'San Antonio', 'Spurs', ['#061922', '#c4ced4', '#000000']],
-    ['SAC', 'kings', 'Sacramento', 'Kings', ['#724c9f', '#5a2d81', '#5a2d81']],
-    ['POR', 'blazers', 'Portland', 'Trail Blazers', ['#061922', '#e03a3e', '#e03a3e']],
-    ['PHX', 'suns', 'Phoenix', 'Suns', ['#e56020', '#e56020', '#1d1160']],
-    ['PHI', 'sixers', 'Philadelphia', '76ers', ['#ed174c', '#006bb6', '#006bb6']],
-    ['ORL', 'magic', 'Orlando', 'Magic', ['#007dc5', '#0077c0', '#0077c0']],
-    ['OKC', 'thunder', 'Oklahoma City', 'Thunder', ['#007dc3', '#007ac1', '#007ac1']],
-    ['NYK', 'knicks', 'New York', 'Knicks', ['#006bb6', '#006bb6', '#006bb6']],
-    ['NOP', 'pelicans', 'New Orleans', 'Pelicans', ['#002b5c', '#b4975a', '#002b5c']],
-    ['MIN', 'timberwolves', 'Minnesota', 'Timberwolves', ['#005083', '#236192', '#0c2340']],
-    ['MIL', 'bucks', 'Milwaukee', 'Bucks', ['#00471b', '#00471b', '#00471b']],
-    ['MIA', 'heat', 'Miami', 'Heat', ['#98002e', '#98002E', '#98002e']],
-    ['MEM', 'grizzlies', 'Memphis', 'Grizzlies', ['#7399c6', '#7399C6', '#5d76a9']],
-    ['LAL', 'lakers', 'Los Angeles', 'Lakers', ['#552583', '#fdb927', '#552583']],
-    ['LAC', 'clippers', 'LA', 'Clippers', ['#ed174c', '#c8102e', '#c8102e']],
-    ['IND', 'pacers', 'Indiana', 'Pacers', ['#ffc633', '#fdbb30', '#002d62']],
-    ['HOU', 'rockets', 'Houston', 'Rockets', ['#ce1141', '#ce1141', '#ce1141']],
-    ['GSW', 'warriors', 'Golden State', 'Warriors', ['#fdb927', '#FDB927', '#006bb6']],
-    ['DET', 'pistons', 'Detroit', 'Pistons', ['#006bb6', '#C80F2D', '#1d428a']],
-    ['DEN', 'nuggets', 'Denver', 'Nuggets', ['#4d90cd', '#fec524', '#0e2240']],
-    ['DAL', 'mavericks', 'Dallas', 'Mavericks', ['#0064b1', '#0053bc', '#0053BC']],
-    ['CLE', 'cavaliers', 'Cleveland', 'Cavaliers', ['#860038', '#6f263d', '#6f263d']],
-    ['CHI', 'bulls', 'Chicago', 'Bulls', ['#ce1141', '#ce1141', '#ce1141']],
-    ['CHA', 'hornets', 'Charlotte', 'Hornets', ['#00788c', '#00788c', '#00788c']],
-    ['BKN', 'nets', 'Brooklyn', 'Nets', ['#061922', '#dfdfdf', '#000000']],
-    ['BOS', 'celtics', 'Boston', 'Celtics', ['#008348', '#008348', '#008348']],
-    ['ATL', 'hawks', 'Atlanta', 'Hawks', ['#e13a3e', '#e03a3e', '#e03a3e']],
-]
-
+import find_teams
 
 url = 'https://www.basketball-reference.com/leagues/NBA_2021.html'
 
@@ -56,11 +24,11 @@ for string in strings:
         if parent.name == 'table' and 'team' in parent.attrs['id']:
             table = parent
 
-table_data = pd.read_html(str(table))[0]
+dataframe = pd.read_html(str(table))[0]
 
 
-def compare_stat(team_names, stat_key):
-    team_stats = table_data.loc[table_data['Team'].str.contains('|'.join(team_names))]
+def compare_teams(team_names, stat_key):
+    team_stats = dataframe.loc[dataframe['Team'].str.contains('|'.join(team_names))]
 
     team_stats = team_stats.sort_values(by=[stat_key], ascending=False, ignore_index=True)
 
@@ -69,6 +37,51 @@ def compare_stat(team_names, stat_key):
     print(f'The {team_stats.iloc[0]["Team"]} had {abs(delta):.2f} more {stat_key} per game than the {team_stats.iloc[1]["Team"]}')
 
 
-compare_stat(['Suns', 'Bucks'], 'TOV')
+dataframe = dataframe.drop([30])
+
+
+def map_to_per_game_values(series):
+    return series.map(lambda x: x / 72 if type(x) == int else x)
+
+
+per_game_df = dataframe.apply(map_to_per_game_values, axis=1)
+
+y = per_game_df['PTS']
+
+correlated_values = []
+
+for key in per_game_df.keys():
+    if re.match('Team|Rk|G|MP|PTS', key) is None:
+        x = per_game_df[key]
+
+        res = stats.linregress(x, y)
+
+        if res.rvalue > 0.5:
+            correlated_values.append(key)
+
+X = per_game_df[correlated_values]
+
+regression = linear_model.LinearRegression()
+
+regression.fit(X, y)
+
+team = per_game_df.iloc[0]
+
+predicted = regression.predict([[team['FG'], team['FG%'], team['3P%'], team['2P%']]])
+
+print(f'{team["Team"]} - predicted average points: {predicted[0]:.2f}, actual average: {team["PTS"]:.2f}')
+team_links_df = find_teams.create_team_links_df()
+
+
+def strip_asterisks_from_team_names(dataframe):
+    def df_apply(series):
+        return series.map(lambda x: x.replace('*', '') if type(x) is str else x)
+
+    return dataframe.apply(df_apply)
+
+
+per_game_df = strip_asterisks_from_team_names(per_game_df)
+
+combined_df = team_links_df.set_index('Name').join(per_game_df.set_index('Team'))
 
 print(f'it took {time.time() - time1:.2f} seconds')
