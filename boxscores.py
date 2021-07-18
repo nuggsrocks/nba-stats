@@ -57,38 +57,36 @@ def scrape_for_boxscores(date):
     return boxscores
 
 
-season_start_date = datetime.date(year=2020, month=12, day=22)
-season_end_date = datetime.date(year=2021, month=5, day=16)
+def scrape_date_range(start, end):
+    dates = pd.date_range(start=start, end=end, freq='D')
 
-dates = pd.date_range(start=season_start_date, end=season_end_date, freq='D')
+    full_df = pd.DataFrame()
 
-full_df = pd.DataFrame()
+    game_index = 0
 
-game_index = 0
+    for date in dates:
+        games = scrape_for_boxscores(date)
 
-for date in dates:
-    games = scrape_for_boxscores(date)
+        for boxscore in games:
+            for team_code in boxscore:
+                boxscore[team_code]['GAME_ID'] = game_index
+                boxscore[team_code]['TEAM'] = team_code
+                full_df = full_df.append(boxscore[team_code], ignore_index=True)
+            game_index += 1
 
-    for boxscore in games:
-        for team_code in boxscore:
-            boxscore[team_code]['GAME_ID'] = game_index
-            boxscore[team_code]['TEAM'] = team_code
-            full_df = full_df.append(boxscore[team_code], ignore_index=True)
-        game_index += 1
+        if date > datetime.date(2020, 12, 22):
+            break
 
+    def set_dtypes(series):
+        if series.name == 'NAME' or series.name == 'TEAM':
+            return series.astype('string')
+        elif series.name == 'MP':
+            time_list = list(series.str.split(':'))
 
-def set_dtypes(series):
-    if series.name == 'NAME' or series.name == 'TEAM':
-        return series.astype('string')
-    elif series.name == 'MP':
-        time_list = list(series.str.split(':'))
+            timedelta_list = list(map(lambda x: pd.Timedelta(minutes=int(x[0]), seconds=int(x[1])), time_list))
 
-        timedelta_list = list(map(lambda x: pd.Timedelta(minutes=int(x[0]), seconds=int(x[1])), time_list))
+            return pd.Series(timedelta_list)
+        else:
+            return series.astype('int64')
 
-        return pd.Series(timedelta_list)
-    else:
-        return series.astype('int64')
-
-
-full_df = full_df.apply(set_dtypes)
-print(full_df)
+    return full_df.apply(set_dtypes)
