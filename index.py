@@ -5,12 +5,10 @@ from bs4 import BeautifulSoup
 from boxscores import scrape_for_boxscore_links, scrape_for_boxscore, set_dtypes, format_dataframe
 
 
-def index():
+def index(date_range):
     url = 'https://www.basketball-reference.com/boxscores/'
 
     stats_df = pd.DataFrame()
-
-    date_range = pd.date_range(start=datetime.date(2020, 12, 22), end=datetime.date(2020, 12, 25))
 
     for date in date_range:
         res = requests.get(url, {'year': date.year, 'month': date.month, 'day': date.day})
@@ -33,4 +31,22 @@ def index():
     return stats_df.apply(set_dtypes)
 
 
-stat_df = index()
+
+def input_date():
+    year = int(input('Year: '))
+    month = int(input('Month: '))
+    day = int(input('Day: '))
+
+    return datetime.date(year, month, day)
+
+
+print('Start date:')
+start_date = input_date()
+print('End date:')
+end_date = input_date()
+
+date_range = pd.date_range(start_date, end_date)
+
+stat_df = index(date_range)
+
+print(stat_df)
