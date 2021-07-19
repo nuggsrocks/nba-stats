@@ -34,13 +34,14 @@ def format_dataframe(df):
     processed_df = processed_df.drop(index=processed_df.loc[lambda x: x['NAME'] == 'Reserves'].index)
     processed_df = processed_df.drop(index=processed_df['NAME'][lambda x: x == 'Team Totals'].index)
     processed_df = processed_df.drop(index=processed_df.loc[processed_df['MP'] == 'Did Not Play'].index)
+    processed_df = processed_df.drop(index=processed_df.loc[processed_df['MP'] == 'Did Not Dress'].index)
     processed_df = processed_df.drop(columns=['FG%', '3P%', 'FT%'])
 
     return processed_df.reset_index(drop=True)
 
 
 def set_dtypes(series):
-    if series.name == 'NAME' or series.name == 'TEAM':
+    if series.name == 'NAME' or series.name == 'TEAM' or series.name == 'GAME_ID':
         return series.astype('string')
     elif series.name == 'MP':
         time_list = list(series.str.split(':'))

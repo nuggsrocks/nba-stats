@@ -4,28 +4,33 @@ import requests
 from bs4 import BeautifulSoup
 from boxscores import scrape_for_boxscore_links, scrape_for_boxscore, set_dtypes, format_dataframe
 
-url = 'https://www.basketball-reference.com/boxscores/'
 
-stats_df = pd.DataFrame()
+def index():
+    url = 'https://www.basketball-reference.com/boxscores/'
 
-date_range = pd.date_range(start=datetime.date(2020, 12, 22), end=datetime.date(2020, 12, 22))
+    stats_df = pd.DataFrame()
 
-for date in date_range:
-    res = requests.get(url, {'year': date.year, 'month': date.month, 'day': date.day})
+    date_range = pd.date_range(start=datetime.date(2020, 12, 22), end=datetime.date(2020, 12, 25))
 
-    links = scrape_for_boxscore_links(res.text)
+    for date in date_range:
+        res = requests.get(url, {'year': date.year, 'month': date.month, 'day': date.day})
 
-    for link in links:
-        link = link.replace('/boxscores/', '')
+        links = scrape_for_boxscore_links(res.text)
 
-        game_id = link.replace('.html', '')
+        for link in links:
+            link = link.replace('/boxscores/', '')
 
-        res = requests.get(url + link)
+            game_id = link.replace('.html', '')
 
-        soup = BeautifulSoup(res.text, 'html.parser')
+            res = requests.get(url + link)
 
-        boxscore = scrape_for_boxscore(soup, game_id)
+            soup = BeautifulSoup(res.text, 'html.parser')
 
-        stats_df = stats_df.append(format_dataframe(boxscore), ignore_index=True)
+            boxscore = scrape_for_boxscore(soup, game_id)
 
-print(stats_df)
+            stats_df = stats_df.append(format_dataframe(boxscore), ignore_index=True)
+
+    return stats_df.apply(set_dtypes)
+
+
+stat_df = index()

@@ -70,11 +70,11 @@ class TestScrapeForBoxscore(unittest.TestCase):
 
     def test_format_dataframe(self):
         mock_data = {
-            'Starters': ['a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'Team Totals', 'a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'Team Totals'],
-            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', '44:00', '11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', '44:00'],
-            'FG%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            '3P%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            'FT%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+            'Starters': ['a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'Team Totals', 'a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'i', 'Team Totals'],
+            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', '44:00', '11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', 'Did Not Dress', '44:00'],
+            'FG%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            '3P%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            'FT%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         }
         mock_df = pd.DataFrame(data=mock_data)
 
