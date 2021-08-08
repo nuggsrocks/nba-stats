@@ -59,17 +59,25 @@ class TestScrapeForBoxscore(unittest.TestCase):
 
         mock_id = 'XY5430'
 
-        df = boxscores.scrape_for_boxscore(BeautifulSoup(html, 'html.parser'), mock_id)
+        df = boxscores.scrape_for_boxscore(BeautifulSoup(html, 'html.parser'),
+                                           mock_id)
 
-        expected = pd.DataFrame(data={'foo': ['bar', 'BAR'], 'TEAM': ['GSW', 'BRK'], 'GAME_ID': [mock_id, mock_id]}, index=[0, 1])
+        expected = pd.DataFrame(
+            data={'foo': ['bar', 'BAR'], 'TEAM': ['GSW', 'BRK'],
+                  'GAME_ID': [mock_id, mock_id]}, index=[0, 1])
 
         self.assertIsInstance(df, pd.DataFrame)
         pd.testing.assert_frame_equal(df, expected)
 
     def test_format_dataframe(self):
         mock_data = {
-            'Starters': ['a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'Team Totals', 'a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h', 'i', 'Team Totals'],
-            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', '44:00', '11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00', 'Did Not Play', 'Did Not Dress', '44:00'],
+            'Starters': ['a', 'b', 'c', 'd', 'e', 'Reserves', 'g', 'h',
+                         'Team Totals', 'a', 'b', 'c', 'd', 'e', 'Reserves',
+                         'g', 'h', 'i', 'Team Totals'],
+            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', 'foobar', '1:00',
+                   'Did Not Play', '44:00', '11:00', '1:00', '1:00', '1:00',
+                   '1:00', 'foobar', '1:00', 'Did Not Play', 'Did Not Dress',
+                   '44:00'],
             'FG%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             '3P%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             'FT%': [1, 2, 3, 4, 5, 6, 7, 8, 9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -77,8 +85,10 @@ class TestScrapeForBoxscore(unittest.TestCase):
         mock_df = pd.DataFrame(data=mock_data)
 
         expected_data = {
-            'NAME': ['a', 'b', 'c', 'd', 'e', 'g', 'a', 'b', 'c', 'd', 'e', 'g'],
-            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', '1:00', '11:00', '1:00', '1:00', '1:00', '1:00', '1:00']
+            'NAME': ['a', 'b', 'c', 'd', 'e', 'g', 'a', 'b', 'c', 'd', 'e',
+                     'g'],
+            'MP': ['11:00', '1:00', '1:00', '1:00', '1:00', '1:00', '11:00',
+                   '1:00', '1:00', '1:00', '1:00', '1:00']
         }
 
         expected_df = pd.DataFrame(data=expected_data)
@@ -88,8 +98,10 @@ class TestScrapeForBoxscore(unittest.TestCase):
 
     def test_set_dtypes(self):
         test_cases = {
-            'NAME': {'series': ['Hello', 'World', 'foo', 'bar'], 'dtype': 'string'},
-            'MP': {'series': ['11:11', '12:12', '13:13', '0:23'], 'dtype': 'timedelta64[ns]'},
+            'NAME': {'series': ['Hello', 'World', 'foo', 'bar'],
+                     'dtype': 'string'},
+            'MP': {'series': ['11:11', '12:12', '13:13', '0:23'],
+                   'dtype': 'timedelta64[ns]'},
             'FG': {'series': ['1', '2', '3', '4'], 'dtype': 'int64'}
         }
 
