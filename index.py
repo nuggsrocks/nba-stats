@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from boxscores import scrape_for_boxscore_links, scrape_for_boxscore, \
     set_dtypes, format_dataframe
-from open_stats_file import open_stats_file
+from create_stats_file import create_stats_file
 from save_stats_to_json import save_stats_to_json
 import os
 
@@ -52,6 +52,6 @@ end_date = input_date()
 
 stat_df = index(pd.date_range(start_date, end_date))
 
-stats_file = open_stats_file(os, open)
+stats_file = create_stats_file(os, open)
 
 save_stats_to_json(stats_file, stat_df.to_json())

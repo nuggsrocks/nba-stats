@@ -2,10 +2,10 @@ import unittest
 from unittest import mock
 from unittest.mock import patch, mock_open
 import os
-from open_stats_file import open_stats_file
+from create_stats_file import create_stats_file
 
 
-class TestOpenStatsFile(unittest.TestCase):
+class TestCreateStatsFile(unittest.TestCase):
     def setUp(self):
         self.mock_os = mock.Mock(spec=os)
         self.mock_open = mock_open()
@@ -18,7 +18,7 @@ class TestOpenStatsFile(unittest.TestCase):
         self.mock_os.path.isdir.return_value = False
 
         with patch('__main__.open', self.mock_open):
-            file = open_stats_file(self.mock_os, self.mock_open)
+            file = create_stats_file(self.mock_os, self.mock_open)
 
         self.mock_os.path.isdir.assert_called_once()
         self.mock_os.mkdir.assert_called_once_with('stats')
@@ -30,7 +30,7 @@ class TestOpenStatsFile(unittest.TestCase):
         self.mock_os.path.exists.return_value = False
 
         with patch('__main__.open', self.mock_open):
-            file = open_stats_file(self.mock_os, self.mock_open)
+            file = create_stats_file(self.mock_os, self.mock_open)
 
         self.mock_os.path.isdir.assert_called_once()
         self.mock_open.assert_called_once_with('./stats/stats.json', 'x')
@@ -41,7 +41,7 @@ class TestOpenStatsFile(unittest.TestCase):
         self.mock_os.path.exists.return_value = True
 
         with patch('__main__.open', self.mock_open):
-            file = open_stats_file(self.mock_os, self.mock_open)
+            file = create_stats_file(self.mock_os, self.mock_open)
 
         self.mock_os.path.isdir.assert_called_once()
         self.mock_open.assert_called_once_with('./stats/stats.json', 'x')

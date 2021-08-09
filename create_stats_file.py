@@ -1,4 +1,4 @@
-def open_stats_file(os, open_file):
+def create_stats_file(os, open_file):
     if os.path.isdir('./stats'):
         if os.path.exists('./stats/stats.json'):
             os.remove('./stats/stats.json')
