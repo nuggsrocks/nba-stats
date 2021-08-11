@@ -52,6 +52,4 @@ end_date = input_date()
 
 stat_df = index(pd.date_range(start_date, end_date))
 
-stats_file = create_stats_file(os, open)
-
-save_stats_to_json(stats_file, stat_df.to_json())
+print(stat_df)

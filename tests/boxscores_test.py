@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import boxscores
 from bs4 import BeautifulSoup
+import datetime
 
 
 class TestScrapeForBoxscore(unittest.TestCase):
@@ -57,14 +58,27 @@ class TestScrapeForBoxscore(unittest.TestCase):
         </table>
         '''
 
-        mock_id = 'XY5430'
+        mock_id = '202012220BRK'
 
         df = boxscores.scrape_for_boxscore(BeautifulSoup(html, 'html.parser'),
                                            mock_id)
 
         expected = pd.DataFrame(
-            data={'foo': ['bar', 'BAR'], 'TEAM': ['GSW', 'BRK'],
-                  'GAME_ID': [mock_id, mock_id]}, index=[0, 1])
+            data={
+                'foo': [
+                    'bar', 'BAR'
+                ],
+                'TEAM': [
+                    'GSW', 'BRK'
+                ],
+                'GAME_ID': [
+                    mock_id, mock_id
+                ],
+                'DATE': [
+                    datetime.date(2020, 12, 22),
+                    datetime.date(2020, 12, 22)
+                ]
+            }, index=[0, 1])
 
         self.assertIsInstance(df, pd.DataFrame)
         pd.testing.assert_frame_equal(df, expected)
@@ -102,7 +116,16 @@ class TestScrapeForBoxscore(unittest.TestCase):
                      'dtype': 'string'},
             'MP': {'series': ['11:11', '12:12', '13:13', '0:23'],
                    'dtype': 'timedelta64[ns]'},
-            'FG': {'series': ['1', '2', '3', '4'], 'dtype': 'int64'}
+            'FG': {'series': ['1', '2', '3', '4'], 'dtype': 'int64'},
+            'DATE': {
+                'series': [
+                    datetime.date(2020, 12, 22),
+                    datetime.date(2020, 12, 22),
+                    datetime.date(2020, 12, 23),
+                    datetime.date(2020, 12, 23)
+                ],
+                'dtype': 'datetime64[ns]'
+            }
         }
 
         mock_data = {}

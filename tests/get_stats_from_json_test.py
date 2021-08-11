@@ -22,6 +22,7 @@ class TestGetStatsFromJson(unittest.TestCase):
         path = 'foo/bar'
 
         df = get_stats_from_json(path, self.mock_pandas)
+
         self.assertIsInstance(df, pandas.DataFrame)
         self.mock_pandas.read_json.assert_called_once_with(path)
 
